@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PayrollPro — Employee Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --card:      #16161f;
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(255,255,255,0.13);
+      --accent:    #6c63ff;
+      --accent2:   #a78bfa;
+      --teal:      #2dd4bf;
+      --coral:     #f87171;
+      --amber:     #fbbf24;
+      --text:      #f0f0f5;
+      --muted:     #8888aa;
+      --dim:       #444466;
+      --ft-bg:     rgba(108,99,255,0.12);
+      --ft-color:  #a78bfa;
+      --pt-bg:     rgba(45,212,191,0.12);
+      --pt-color:  #2dd4bf;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 10;
+    }
+    .logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .logo-title span { color: var(--accent2); }
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .dot-live {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .nav { padding: 12px 10px; flex: 1; }
+    .nav-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 8px 10px 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .nav-item.active { background: rgba(108,99,255,0.15); color: var(--accent2); }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .topbar {
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #5a52e0; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border2);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+    .btn-danger { background: rgba(248,113,113,0.15); color: var(--coral); border: 1px solid rgba(248,113,113,0.2); }
+    .btn-danger:hover { background: rgba(248,113,113,0.25); }
+
+    .content { padding: 24px 28px; flex: 1; }
+
+    /* ── Metric cards ── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .metric {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: border-color 0.2s;
+    }
+    .metric:hover { border-color: var(--border2); }
+    .metric-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .metric-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); }
+    .metric-sub { font-size: 11px; color: var(--dim); margin-top: 4px; }
+    .metric-accent { border-top: 2px solid var(--accent); }
+    .metric-teal { border-top: 2px solid var(--teal); }
+    .metric-amber { border-top: 2px solid var(--amber); }
+    .metric-coral { border-top: 2px solid var(--coral); }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .table-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .table-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; }
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-input {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      width: 200px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--dim); }
+    .filter-select {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      cursor: pointer;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      padding: 10px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 13px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge-ft { background: var(--ft-bg); color: var(--ft-color); }
+    .badge-pt { background: var(--pt-bg); color: var(--pt-color); }
+    .salary-cell { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; }
+    .id-cell { color: var(--dim); font-size: 12px; }
+    .action-btns { display: flex; gap: 6px; }
+    .action-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+    .action-btn:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,0.05); }
+    .action-btn.del:hover { color: var(--coral); border-color: rgba(248,113,113,0.3); }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 28px;
+      width: 420px;
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--dim); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .error-msg { font-size: 11px; color: var(--coral); margin-top: 8px; min-height: 14px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      color: var(--text);
+      z-index: 200;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-left: 3px solid var(--teal); }
+    .toast.error { border-left: 3px solid var(--coral); }
+
+    /* ── Views ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── API View ── */
+    .api-list { display: flex; flex-direction: column; gap: 2px; }
+    .api-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .method-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-family: 'Syne', sans-serif;
+      min-width: 52px;
+      text-align: center;
+    }
+    .m-get { background: rgba(45,212,191,0.15); color: var(--teal); }
+    .m-post { background: rgba(108,99,255,0.15); color: var(--accent2); }
+    .m-put { background: rgba(251,191,36,0.15); color: var(--amber); }
+    .m-delete { background: rgba(248,113,113,0.15); color: var(--coral); }
+    .api-path { font-family: monospace; color: var(--muted); font-size: 12px; }
+    .api-desc { margin-left: auto; color: var(--dim); font-size: 11px; }
+
+    /* ── Payslip ── */
+    .payslip-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-width: 500px;
+      overflow: hidden;
+    }
+    .payslip-header-bar {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .payslip-company { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+    .payslip-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .payslip-body { padding: 20px 24px; }
+    .payslip-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 5px 0;
+    }
+    .payslip-row .label { color: var(--muted); }
+    .payslip-section-title {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 14px 0 6px;
+    }
+    .payslip-divider { height: 1px; background: var(--border); margin: 10px 0; }
+    .payslip-total { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+    .payslip-total .amount { color: var(--teal); }
+    .deduction { color: var(--coral) !important; }
+    .emp-select-wrap { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .emp-select-wrap label { font-size: 12px; color: var(--muted); }
+
+    /* ── Loading ── */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .spinner {
+      width: 24px; height: 24px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Bar chart ── */
+    .bar-chart { margin-top: 16px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .bar-name { font-size: 11px; color: var(--muted); width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; background: var(--surface); border-radius: 4px; height: 8px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .bar-val { font-size: 11px; color: var(--muted); width: 80px; text-align: right; font-family: monospace; }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-title">Payroll<span>Pro</span></div>
+    <div class="logo-sub"><span class="dot-live"></span> API on :8080</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" onclick="showView('dashboard')">
+      <span class="nav-icon">▦</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showView('employees')">
+      <span class="nav-icon">◎</span> Employees
+    </div>
+    <div class="nav-item" onclick="showView('api')">
+      <span class="nav-icon">⌥</span> REST Endpoints
+    </div>
+    <div class="nav-item" onclick="showView('payslip')">
+      <span class="nav-icon">▤</span> Payslip
+    </div>
+  </nav>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <span class="page-title" id="page-title">Dashboard</span>
+    <button class="btn btn-primary" onclick="openModal()">+ Add Employee</button>
+  </div>
+
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div class="view active" id="view-dashboard">
+      <div class="metrics" id="metrics-grid">
+        <div class="metric metric-accent">
+          <div class="metric-label">Total Employees</div>
+          <div class="metric-value" id="m-total">—</div>
+          <div class="metric-sub">Active staff</div>
+        </div>
+        <div class="metric metric-teal">
+          <div class="metric-label">Full-time</div>
+          <div class="metric-value" id="m-ft">—</div>
+          <div class="metric-sub">Fixed salary</div>
+        </div>
+        <div class="metric metric-amber">
+          <div class="metric-label">Part-time</div>
+          <div class="metric-value" id="m-pt">—</div>
+          <div class="metric-sub">Hourly rate</div>
+        </div>
+        <div class="metric metric-coral">
+          <div class="metric-label">Total Payroll</div>
+          <div class="metric-value" id="m-payroll" style="font-size:18px">—</div>
+          <div class="metric-sub" id="m-avg">Avg —</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">All Employees</span>
+        </div>
+        <div id="dash-table-body"><div class="loading"><div class="spinner"></div>Fetching from API...</div></div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header"><span class="table-title">Salary Distribution</span></div>
+        <div style="padding:16px 20px" id="bar-chart-wrap">
+          <div class="loading"><div class="spinner"></div>Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employees -->
+    <div class="view" id="view-employees">
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <input class="search-input" placeholder="Search by name or department..." id="search-input" oninput="filterTable()" style="width:260px"/>
+        <select class="filter-select" id="filter-type" onchange="filterTable()">
+          <option value="all">All types</option>
+          <option value="FULL_TIME">Full-time</option>
+          <option value="PART_TIME">Part-time</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <div id="emp-table-body"><div class="loading"><div class="spinner"></div>Fetching employees...</div></div>
+      </div>
+    </div>
+
+    <!-- REST Endpoints -->
+    <div class="view" id="view-api">
+      <div style="margin-bottom:16px;font-size:12px;color:var(--muted)">
+        Base URL: <code style="background:var(--card);padding:3px 8px;border-radius:5px;color:var(--accent2)">http://localhost:8080</code>
+      </div>
+      <div class="api-list" id="api-list"></div>
+    </div>
+
+    <!-- Payslip -->
+    <div class="view" id="view-payslip">
+      <div class="emp-select-wrap">
+        <label>Select employee:</label>
+        <select class="filter-select" id="payslip-select" onchange="renderPayslip()" style="width:220px"></select>
+      </div>
+      <div id="payslip-wrap"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add Employee Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">Add New Employee</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" id="f-name" placeholder="e.g. Priya Sharma"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Department</label>
+      <input class="form-input" id="f-dept" placeholder="e.g. Engineering"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Employee Type</label>
+      <select class="form-select" id="f-type" onchange="toggleFields()">
+        <option value="fulltime">Full-time</option>
+        <option value="parttime">Part-time</option>
+      </select>
+    </div>
+    <div id="ft-fields">
+      <div class="form-group">
+        <label class="form-label">Monthly Salary (₹)</label>
+        <input class="form-input" id="f-salary" type="number" placeholder="e.g. 65000"/>
+      </div>
+    </div>
+    <div id="pt-fields" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Hours Worked</label>
+        <input class="form-input" id="f-hours" type="number" placeholder="e.g. 80"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hourly Rate (₹)</label>
+        <input class="form-input" id="f-rate" type="number" placeholder="e.g. 400"/>
+      </div>
+    </div>
+    <div class="error-msg" id="f-error"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addEmployee()">Add Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8080/api/employees';
+let allEmployees = [];
+let currentView = 'dashboard';
+
+const endpoints = [
+  {m:'GET',    p:'/api/employees',              d:'Get all employees'},
+  {m:'GET',    p:'/api/employees/{id}',         d:'Get by ID'},
+  {m:'GET',    p:'/api/employees/fulltime',      d:'Full-time employees'},
+  {m:'GET',    p:'/api/employees/parttime',      d:'Part-time employees'},
+  {m:'GET',    p:'/api/employees/department?name=', d:'Filter by department'},
+  {m:'GET',    p:'/api/employees/search?name=', d:'Search by name'},
+  {m:'GET',    p:'/api/employees/summary',       d:'Payroll summary'},
+  {m:'POST',   p:'/api/employees/fulltime',      d:'Add full-time employee'},
+  {m:'POST',   p:'/api/employees/parttime',      d:'Add part-time employee'},
+  {m:'PUT',    p:'/api/employees/{id}/fulltime', d:'Update full-time'},
+  {m:'PUT',    p:'/api/employees/{id}/parttime', d:'Update part-time'},
+  {m:'DELETE', p:'/api/employees/{id}',          d:'Delete employee'},
+];
+
+function fmt(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
+
+async function fetchAll() {
+  try {
+    const res = await fetch(API);
+    allEmployees = await res.json();
+    return allEmployees;
+  } catch(e) {
+    showToast('Cannot connect to API. Is Spring Boot running?', 'error');
+    return [];
+  }
+}
+
+async function fetchSummary() {
+  try {
+    const res = await fetch(API + '/summary');
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function loadDashboard() {
+  const [emps, summary] = await Promise.all([fetchAll(), fetchSummary()]);
+  if (summary) {
+    document.getElementById('m-total').textContent   = summary.totalEmployees;
+    document.getElementById('m-ft').textContent      = summary.fullTimeCount;
+    document.getElementById('m-pt').textContent      = summary.partTimeCount;
+    document.getElementById('m-payroll').textContent = fmt(summary.totalPayroll);
+    document.getElementById('m-avg').textContent     = 'Avg ' + fmt(Math.round(summary.averageSalary));
+  }
+  renderDashTable(emps);
+  renderBarChart(emps);
+}
+
+function renderDashTable(emps) {
+  const el = document.getElementById('dash-table-body');
+  if (!emps.length) { el.innerHTML = '<div class="empty-state">No employees found.</div>'; return; }
+  el.innerHTML = `<table>
+    <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Type</th><th>Salary</th></tr></thead>
+    <tbody>${emps.map(e=>`<tr>
+      <td class="id-cell">#${e.id}</td>
+      <td style="font-weight:500">${e.name}</td>
+      <td>${e.department}</td>
+      <td><span class="badge ${e.employeeType==='FULL_TIME'?'badge-ft':'badge-pt'}">${e.employeeType==='FULL_TIME'?'Full-time':'Part-time'}</span></td>
+      <td class="salary-cell">${fmt(e.salary)}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function renderBarChart(emps) {
+  const wrap = document.getElementById('bar-chart-wrap');
+  if (!emps.length) { wrap.innerHTML = '<div class="empty-state">No data.</div>'; return; }
+  const total = emps.reduce((s,e)=>s+e.salary,0);
+  wrap.innerHTML = `<div class="bar-chart">${emps.map(e=>{
+    const pct = Math.round(e.salary/total*100);
+    const color = e.employeeType==='FULL_TIME' ? '#6c63ff' : '#2dd4bf';
+    return `<div class="bar-row">
+      <div class="bar-name" title="${e.name}">${e.name.split(' ')[0]}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="bar-val">${fmt(e.salary)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function loadEmployees() {
+  const emps = allEmployees.length ? allEmployees : await fetchAll();
+  renderEmpTable(emps);
+  loadPayslipSelect(emps);
+}
+
+function renderEmpTable(emps) {
+  const q    = document.getElementById('search-input')?.value.toLowerCase() || '';
+  const type = document.getElementById('filter-type')?.value || 'all';
+  const filtered = emps.filter(e => {
+    const matchQ = !q || e.name.toLowerCase().includes(q) || e.department.toLowerCase().includes(q);
+    const matchT = type==='all' || e.employeeType===type;
+    return matchQ && matchT;
+  });
+  const el = document.getElementById('emp-table-body');
+  if (!filtered.length) { el.innerHTML = '<div class="empty-state">No employees match your search.</div>'; return; }
+  el.innerHTML = `<table>
+    <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Type</th><th>Details</th><th>Net Salary</th><th></th></tr></thead>
+    <tbody>${filtered.map(e=>`<tr>
+      <td class="id-cell">#${e.id}</td>
+      <td style="font-weight:500">${e.name}</td>
+      <td>${e.department}</td>
+      <td><span class="badge ${e.employeeType==='FULL_TIME'?'badge-ft':'badge-pt'}">${e.employeeType==='FULL_TIME'?'Full-time':'Part-time'}</span></td>
+      <td style="color:var(--muted);font-size:12px">${e.employeeType==='FULL_TIME'?fmt(e.monthlySalary)+'/mo':e.hoursWorked+' hrs × '+fmt(e.hourlyRate)}</td>
+      <td class="salary-cell">${fmt(e.salary)}</td>
+      <td><div class="action-btns">
+        <button class="action-btn del" onclick="deleteEmployee(${e.id})">Remove</button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function filterTable() {
+  renderEmpTable(allEmployees);
+}
+
+function loadPayslipSelect(emps) {
+  const sel = document.getElementById('payslip-select');
+  const ft  = emps.filter(e=>e.employeeType==='FULL_TIME');
+  sel.innerHTML = ft.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  if (ft.length) renderPayslip();
+}
+
+function renderPayslip() {
+  const id  = parseInt(document.getElementById('payslip-select').value);
+  const emp = allEmployees.find(e=>e.id===id);
+  if (!emp) return;
+  const basic = emp.monthlySalary;
+  const hra   = Math.round(basic*0.20);
+  const da    = Math.round(basic*0.10);
+  const gross = basic+hra+da;
+  const pf    = Math.round(basic*0.12);
+  const tax   = Math.round(gross*0.05);
+  const net   = gross-pf-tax;
+  document.getElementById('payslip-wrap').innerHTML = `
+  <div class="payslip-card">
+    <div class="payslip-header-bar">
+      <div class="payslip-company">ABC Technologies Pvt. Ltd.</div>
+      <div class="payslip-sub">Employee Payslip — Monthly</div>
+    </div>
+    <div class="payslip-body">
+      <div class="payslip-row"><span class="label">Employee</span><span style="font-weight:500">${emp.name}</span></div>
+      <div class="payslip-row"><span class="label">ID</span><span>#${emp.id}</span></div>
+      <div class="payslip-row"><span class="label">Department</span><span>${emp.department}</span></div>
+      <div class="payslip-section-title">Earnings</div>
+      <div class="payslip-row"><span class="label">Basic Salary</span><span>${fmt(basic)}</span></div>
+      <div class="payslip-row"><span class="label">HRA (20%)</span><span>${fmt(hra)}</span></div>
+      <div class="payslip-row"><span class="label">DA (10%)</span><span>${fmt(da)}</span></div>
+      <div class="payslip-divider"></div>
+      <div class="payslip-row"><span class="label">Gross Salary</span><span style="font-weight:600">${fmt(gross)}</span></div>
+      <div class="payslip-section-title">Deductions</div>
+      <div class="payslip-row"><span class="label">PF (12%)</span><span class="deduction">- ${fmt(pf)}</span></div>
+      <div class="payslip-row"><span class="label">Income Tax (5%)</span><span class="deduction">- ${fmt(tax)}</span></div>
+      <div class="payslip-divider"></div>
+      <div class="payslip-row payslip-total"><span>Net Salary</span><span class="amount">${fmt(net)}</span></div>
+    </div>
+  </div>`;
+}
+
+function loadApiView() {
+  const cls = {GET:'m-get',POST:'m-post',PUT:'m-put',DELETE:'m-delete'};
+  document.getElementById('api-list').innerHTML = endpoints.map(e=>`
+    <div class="api-item">
+      <span class="method-badge ${cls[e.m]}">${e.m}</span>
+      <span class="api-path">${e.p}</span>
+      <span class="api-desc">${e.d}</span>
+    </div>`).join('');
+}
+
+function showView(v) {
+  currentView = v;
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-item')[['dashboard','employees','api','payslip'].indexOf(v)].classList.add('active');
+  const titles = {dashboard:'Dashboard',employees:'Employees',api:'REST Endpoints',payslip:'Payslip Generator'};
+  document.getElementById('page-title').textContent = titles[v];
+  if (v==='employees') loadEmployees();
+  if (v==='api') loadApiView();
+  if (v==='payslip') { if(allEmployees.length) loadPayslipSelect(allEmployees); else fetchAll().then(loadPayslipSelect); }
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('f-error').textContent = '';
+  ['f-name','f-dept','f-salary','f-hours','f-rate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+}
+function toggleFields() {
+  const t = document.getElementById('f-type').value;
+  document.getElementById('ft-fields').style.display = t==='fulltime'?'block':'none';
+  document.getElementById('pt-fields').style.display = t==='parttime'?'block':'none';
+}
+
+async function addEmployee() {
+  const name = document.getElementById('f-name').value.trim();
+  const dept = document.getElementById('f-dept').value.trim();
+  const type = document.getElementById('f-type').value;
+  const err  = document.getElementById('f-error');
+  if (!name||!dept) { err.textContent='Name and department are required.'; return; }
+  let body, url;
+  if (type==='fulltime') {
+    const sal = parseFloat(document.getElementById('f-salary').value);
+    if (!sal||sal<=0) { err.textContent='Enter a valid monthly salary.'; return; }
+    body = JSON.stringify({name, department:dept, monthlySalary:sal});
+    url  = API+'/fulltime';
+  } else {
+    const hrs  = parseInt(document.getElementById('f-hours').value);
+    const rate = parseFloat(document.getElementById('f-rate').value);
+    if (!hrs||hrs<=0||!rate||rate<=0) { err.textContent='Enter valid hours and rate.'; return; }
+    body = JSON.stringify({name, department:dept, hoursWorked:hrs, hourlyRate:rate});
+    url  = API+'/parttime';
+  }
+  try {
+    const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body});
+    if (res.ok) {
+      closeModal();
+      showToast('Employee added successfully!', 'success');
+      allEmployees = [];
+      await loadDashboard();
+      if (currentView==='employees') loadEmployees();
+    } else {
+      const data = await res.json();
+      err.textContent = data.message || 'Something went wrong.';
+    }
+  } catch(e) { err.textContent = 'Cannot connect to API.'; }
+}
+
+async function deleteEmployee(id) {
+  if (!confirm('Remove this employee?')) return;
+  try {
+    const res = await fetch(API+'/'+id, {method:'DELETE'});
+    if (res.ok) {
+      showToast('Employee removed.', 'success');
+      allEmployees = [];
+      await loadDashboard();
+      if (currentView==='employees') loadEmployees();
+    }
+  } catch(e) { showToast('Cannot connect to API.', 'error'); }
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type==='success'?'✓ ':'✕ ') + msg;
+  t.className = `toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>
