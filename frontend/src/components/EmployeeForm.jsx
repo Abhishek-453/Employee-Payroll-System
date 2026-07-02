@@ -11,7 +11,7 @@ function EmployeeForm({ employee, onSubmit, onCancel }) {
         hourlyRate: ''
     });
 
-    useEffect(() => {``
+    useEffect(() => {
         if (employee) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData(employee);
@@ -147,13 +147,3 @@ function EmployeeForm({ employee, onSubmit, onCancel }) {
 }
 
 export default EmployeeForm;
-
-const [formData, setFormData] = useState({
-    name: '',
-    email: '',              // ✅ Make sure this exists
-    department: '',
-    employeeType: 'FULL_TIME',
-    salary: '',
-    hoursWorked: '',
-    hourlyRate: ''
-});
