@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@WithMockUser(username = "admin", roles = "ADMIN")
 class PayrollApplicationTests {
 
     @Autowired MockMvc         mockMvc;
@@ -38,8 +40,8 @@ class PayrollApplicationTests {
         req.setMonthlySalary(75000.0);
 
         mockMvc.perform(post("/api/employees/fulltime")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(req)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Abhishek Kumar"))
                 .andExpect(jsonPath("$.employeeType").value("FULL_TIME"))
@@ -55,8 +57,8 @@ class PayrollApplicationTests {
         req.setHourlyRate(500.0);
 
         mockMvc.perform(post("/api/employees/parttime")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(req)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.employeeType").value("PART_TIME"))
                 .andExpect(jsonPath("$.salary").value(20000.0));  // 40 × 500
@@ -70,10 +72,10 @@ class PayrollApplicationTests {
         req.setMonthlySalary(50000.0);
 
         mockMvc.perform(post("/api/employees/fulltime")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(req)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.details.name").exists());
+                .andExpect(jsonPath("$.errors.name").value("Name is required"));
     }
 
     // ── GET Tests ─────────────────────────────────────────────────────────────
@@ -106,8 +108,8 @@ class PayrollApplicationTests {
         req.setName("Delete Me"); req.setDepartment("HR"); req.setMonthlySalary(40000.0);
 
         String body = mockMvc.perform(post("/api/employees/fulltime")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(req)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(req)))
                 .andReturn().getResponse().getContentAsString();
 
         Long id = mapper.readTree(body).get("id").asLong();
